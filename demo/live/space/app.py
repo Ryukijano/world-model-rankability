@@ -17,8 +17,15 @@ import rjlive  # noqa: E402
 
 WEIGHTS_REPO = "Ryukijano/robojepa-22m-rankability-live"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+SIZES = {"22M": "22m", "50M": "50m", "100M": "100m", "300M": "300m", "1B": "1b", "2B": "2b", "4B": "4b", "8B": "8b"}
+STEPS = {"22m": "150k", "50m": "120k", "100m": "150k", "300m": "300k", "1b": "300k", "2b": "450k", "4b": "450k", "8b": "300k"}
 weights_dir = snapshot_download(WEIGHTS_REPO, token=os.environ.get("HF_TOKEN"))
-WM, LOAD_INFO = rjlive.load_world_model(weights_dir, DEVICE)
+ENCODER = rjlive.load_encoder(weights_dir, DEVICE)
+MODELS = {}
+for _s in SIZES.values():
+    MODELS[_s], _ = rjlive.load_predictor(os.path.join(weights_dir, "sizes", _s, "config.json"),
+                                          os.path.join(weights_dir, "sizes", _s, "predictor_bf16.safetensors"),
+                                          ENCODER, DEVICE, torch.float16)
 
 with np.load(os.path.join(os.path.dirname(__file__), "data", "anchors300.npz")) as _z:
     D = {k: _z[k] for k in _z.files}  # in memory: a lazy NpzFile handle breaks across the ZeroGPU worker fork
@@ -28,14 +35,19 @@ SHORT = {0: "random", 1: "coarse", 2: "fine"}
 COLOURS = {0: "#9aa3b2", 1: "#2f5bd3", 2: "#e08a1e"}
 
 
-@spaces.GPU(duration=30)
-def run_model(i: int, scale: float) -> np.ndarray:
+def gpu_seconds(i, scale, size):
+    return {"2b": 40, "4b": 50, "8b": 60}.get(size, 30)
+
+
+@spaces.GPU(duration=gpu_seconds)
+def run_model(i: int, scale: float, size: str) -> np.ndarray:
     """Score the state's 64 candidate actions and a copy of each with its translation scaled, on the GPU."""
     cands = D["cands"][i]
     edited = cands.copy()
     edited[:, :3] *= scale
-    return rjlive.score_candidates(WM, D["init_imgs"][i], D["goal_imgs"][i], D["init_pose"][i],
-                                   np.concatenate([cands, edited], 0), DEVICE)
+    wm = MODELS[size]
+    obs_f, goal_f = rjlive.encode_state(wm, D["init_imgs"][i], D["goal_imgs"][i], DEVICE)
+    return rjlive.score_from_features(wm, obs_f, goal_f, D["init_pose"][i], np.concatenate([cands, edited], 0), DEVICE)
 
 
 def plot(dist_cm, score, src, pick, best):
@@ -62,15 +74,16 @@ def plot(dist_cm, score, src, pick, best):
     return fig
 
 
-def analyse(state: int, scale: float):
-    """Run RoboJEPA-22M on one benchmark state and compare its ranking of the 64 candidate actions with the simulator's ground truth."""
+def analyse(state: int, scale: float, model: str):
+    """Run the chosen RoboJEPA size on one benchmark state and compare its ranking of the 64 candidate actions with the simulator's ground truth."""
     i = int(state)
-    pre = D["l1_pre"][i]
+    size = SIZES[model]
+    pre = D[f"l1_pre_{size}"][i]
     try:
-        scores = run_model(i, float(scale))
+        scores = run_model(i, float(scale), size)
         live, edited = scores[:64], scores[64:]
         agree = spearmanr(live, pre).correlation
-        status = f"Computed live on a ZeroGPU GPU. Matches the stored benchmark scores (Spearman {agree:.4f})."
+        status = f"RoboJEPA-{model} ({STEPS[size]} steps), computed live on a ZeroGPU GPU. Matches the stored benchmark scores (Spearman {agree:.4f})."
     except Exception as e:  # quota exhausted, queue timeout, ...
         live, edited = pre, None
         status = f"The GPU call failed ({type(e).__name__}), so these are the stored benchmark scores for this state."
@@ -106,15 +119,15 @@ def analyse(state: int, scale: float):
     return (*views, text, df, plot(dist_cm, live, src, pick, best), edit)
 
 
-INTRO = """# Live RoboJEPA-22M: ranking arm motions toward a goal
-Pick a robot state. The model sees the current camera views and the goal, imagines where each of 64 candidate
+INTRO = """# Live RoboJEPA: ranking arm motions toward a goal
+Pick a robot state and one of Meta's eight released RoboJEPA sizes. The model sees the current camera views and the goal, imagines where each of 64 candidate
 motions would leave the arm, and ranks them. We compare its ranking with what happened when each motion was
-replayed in the MuJoCo simulator. A run takes about 5 to 15 s on a shared GPU."""
+replayed in the MuJoCo simulator. A run takes about 5 to 15 s on a shared GPU, longer for the 4B and 8B models."""
 
-ABOUT = """**Model.** Meta's released [RoboJEPA](https://github.com/facebookresearch/robo_jepa)-22M (150k training steps)
-with the frozen [V-JEPA 2.1](https://github.com/facebookresearch/vjepa2) ViT-G/384 image encoder. The score of a
+ABOUT = """**Models.** Meta's released [RoboJEPA](https://github.com/facebookresearch/robo_jepa) predictors, 22M to 8B
+parameters, each at its final released checkpoint and run in fp16, all sharing the frozen [V-JEPA 2.1](https://github.com/facebookresearch/vjepa2) ViT-G/384 image encoder. The score of a
 motion is minus the mean absolute difference between the imagined next frame and the goal frame, in the encoder's
-feature space. We did not train this model.
+feature space. We did not train these models.
 
 **Data.** 300 of the 3,000 states from the pretraining kitchens of the
 [rankability benchmark](https://huggingface.co/datasets/Ryukijano/robojepa-rankability) (RoboCasa Reach, Franka arm
@@ -127,9 +140,10 @@ the same as a coin flip.
 
 **Licence.** The weights and vendored code are CC BY-NC-SA 4.0 (non-commercial use only)."""
 
-with gr.Blocks(title="Live RoboJEPA-22M action ranking") as demo:
+with gr.Blocks(title="Live RoboJEPA action ranking") as demo:
     gr.Markdown(INTRO)
     with gr.Row(equal_height=True):
+        model = gr.Dropdown(list(SIZES), value="22M", label="RoboJEPA size", scale=0, min_width=140)
         state = gr.Slider(0, N - 1, value=0, step=1, label=f"Robot state (0 to {N - 1})")
         scale = gr.Slider(0.5, 2.0, value=1.1, step=0.05, label="Edit: scale the model's pick by",
                           info="Tests whether the score reacts to a slightly longer or shorter motion")
@@ -154,7 +168,7 @@ with gr.Blocks(title="Live RoboJEPA-22M action ranking") as demo:
     edit = gr.Markdown()
     with gr.Accordion("About this demo", open=False):
         gr.Markdown(ABOUT)
-    btn.click(analyse, [state, scale], [v0, v1, g0, g1, summary, table, fig, edit])
+    btn.click(analyse, [state, scale, model], [v0, v1, g0, g1, summary, table, fig, edit])
 
 if __name__ == "__main__":
     demo.launch(mcp_server=True, theme=gr.themes.Base(primary_hue="blue", neutral_hue="slate"))

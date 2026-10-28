@@ -10,7 +10,7 @@ Public artifacts:
 - Benchmark data and evaluator: [Ryukijano/robojepa-rankability](https://huggingface.co/datasets/Ryukijano/robojepa-rankability)
 - Leaderboard and state explorer: [Ryukijano/world-model-rankability](https://huggingface.co/spaces/Ryukijano/world-model-rankability)
 - Live demo (private for now): [Ryukijano/world-model-rankability-live](https://huggingface.co/spaces/Ryukijano/world-model-rankability-live),
-  RoboJEPA-22M running on ZeroGPU
+  all eight RoboJEPA sizes (22M to 8B) running on ZeroGPU
 
 ![Leaderboard Space](figures/static_space.png)
 
@@ -65,7 +65,9 @@ current and goal views with V-JEPA 2.1 ViT-G, steps RoboJEPA-22M over the 64 can
 and returns the scores. Weights are Meta's, repackaged by [demo/live/export_weights.py](demo/live/export_weights.py)
 (bf16 encoder, predictor only). On 30 states the live scores match the benchmark's stored scores with median
 Spearman .99995 ([demo/live/verify_gpu.py](demo/live/verify_gpu.py)); the top pick differs on 6 of 30 because the top
-two scores are often closer than 1e-4. [demo/static](demo/static) is the leaderboard Space.
+two scores are often closer than 1e-4. All eight released sizes are served from one Space: bf16 predictors cast to fp16 share one fp32 encoder, 39 GB
+resident and 44 GB peak. On 10 states per size their live scores match the stored ones with median Spearman .9998
+or higher ([demo/live/verify_all_sizes.py](demo/live/verify_all_sizes.py)). [demo/static](demo/static) is the leaderboard Space.
 
 ## Next
 
