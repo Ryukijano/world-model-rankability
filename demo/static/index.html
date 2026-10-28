@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>World-model action ranking benchmark</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+:root{--fg:#1d2433;--mut:#566072;--bd:#e3e6ec;--bg:#fff;--acc:#2f5bd3;--grid:#e9ecf1}
+@media (prefers-color-scheme:dark){:root{--fg:#e7eaf0;--mut:#a3abb9;--bd:#2c3240;--bg:#12151c;--acc:#8fb0ff;--grid:#262b36}}
+body{font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--bg);margin:0}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:26px;line-height:1.25;margin:0 0 8px}h2{font-size:19px;margin:28px 0 6px}
+p{margin:6px 0;max-width:78ch}.mut{color:var(--mut);font-size:13.5px}
+a{color:var(--acc)}
+nav{display:flex;gap:4px;margin:18px 0 12px;border-bottom:1px solid var(--bd);overflow-x:auto}
+nav button{background:none;border:0;padding:8px 12px;font:inherit;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--fg);border-color:var(--acc)}
+section[hidden]{display:none}
+.tw{overflow-x:auto;margin:6px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:180px}
+th{color:var(--mut);font-weight:600;vertical-align:bottom}
+td small{display:block;color:var(--mut);font-size:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:10px 0}
+select,input,button.b{font:inherit;padding:5px 8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);max-width:100%}
+button.b{cursor:pointer}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+@media (prefers-color-scheme:dark){button.p{color:#0d1220}}
+.grid{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+img{max-width:100%;border-radius:4px}code{font-size:13px}
+.plot{width:100%;min-height:340px}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;font-size:13.5px;color:var(--mut);margin:8px 0}dt{font-weight:600;color:var(--fg)}dd{margin:0}
+@media(max-width:600px){dl{grid-template-columns:1fr}dd{margin-bottom:4px}}
+</style></head><body><main>
+<h1>World-model action ranking benchmark</h1>
+<p>A world model can plan by imagining the result of each candidate action and picking the one that lands closest to a goal image. This benchmark checks whether those picks match what really happens. It has 3,499 robot-arm states in RoboCasa kitchens, 64 candidate actions per state, and the true result of every action from replaying it in the MuJoCo simulator.</p>
+<p>Main result for Meta's released RoboJEPA models: ranking improves from 22M to about 1B parameters and then stays flat up to 8B, while the error of the imagined future keeps falling. Among the 32 goal-directed candidates the best models reach a Spearman correlation of about .42 and pick the single best action 5% of the time.</p>
+<p class="mut">Data, metric code and submission instructions: <a href="https://huggingface.co/datasets/Ryukijano/robojepa-rankability">Ryukijano/robojepa-rankability</a>. Simulation only, no physical robot. Licence CC BY-NC-SA 4.0, non-commercial research use.</p>
+<nav role="tablist"><button role="tab" aria-selected="true" data-t="lb">Leaderboard</button><button role="tab" aria-selected="false" data-t="ex">Explore a state</button><button role="tab" aria-selected="false" data-t="sub">Score your model</button></nav>
+
+<section id="lb">
+<div class="row"><label>Kitchens <select id="lbs"><option value="target">10 held-out kitchens (499 states)</option><option value="pretrain">30 pretraining kitchens (3,000 states)</option></select></label>
+<label>Input images <select id="lbc"><option value="clean">clean</option><option value="noise25">with pixel noise, σ = 25 (22M and 1B only)</option></select></label></div>
+<h2>Released RoboJEPA models</h2>
+<div class="tw"><table id="lbt"></table></div>
+<p class="mut">Final released checkpoint for each size.</p>
+<div id="lbp" class="plot"></div>
+<h2>Models we trained or fine-tuned</h2>
+<p class="mut">Trained on RoboCasa simulator data with replayed outcomes, evaluated on the 499 states from the 10 held-out kitchens. ± is the standard deviation over seeds.</p>
+<div class="tw"><table id="trained-lbt"></table></div>
+<h2>What the columns mean</h2>
+<dl>
+<dt>Overall ρ</dt><dd>Spearman correlation between the model's scores and the true outcome over all 64 candidates, averaged over states. 1 means the order is perfect, 0 means chance.</dd>
+<dt>Fine ρ</dt><dd>The same, over only the 32 goal-directed candidates, which end close to each other. This is the hard part.</dd>
+<dt>Random ρ</dt><dd>The same, over only the 32 random candidates.</dd>
+<dt>AUROC@5cm</dt><dd>How well the score separates actions that end within 5 cm of the goal from those that don't (0.5 is chance).</dd>
+<dt>Regret</dt><dd>How much further from the goal the model's top pick ends than the best available candidate.</dd>
+<dt>Hit@1</dt><dd>How often the model's top pick is the best candidate.</dd>
+<dt>Fine pairwise</dt><dd>For two goal-directed candidates, how often the model orders them correctly (0.5 is chance).</dd>
+<dt>ECE</dt><dd>Calibration error of the score turned into a probability of ending within 5 cm, fitted on half the states and tested on the other half. Lower is better.</dd>
+<dt>Imag. err</dt><dd>How far the imagined next frame is from the real one, in the encoder's feature space (mean absolute difference). Lower is better.</dd>
+</dl>
+<p class="mut">To add a model: run <a href="https://huggingface.co/datasets/Ryukijano/robojepa-rankability/blob/main/evaluate.py">evaluate.py</a> and open a pull request on the dataset with <code>results/&lt;name&gt;.json</code>. We add a row once we can reproduce the result.</p>
+</section>
+
+<section id="ex" hidden>
+<div class="row"><label>Kitchens <select id="exs"><option value="target">held-out</option><option value="pretrain">pretraining</option></select></label>
+<label>State id <input id="exa" size="22"></label><label>Model <select id="exm"></select></label>
+<button class="b" id="exr">Random state</button><button class="b p" id="exg">Show</button></div>
+<div class="grid"><div><img id="exi" alt="Start (left) and goal (right); agent view (top) and wrist camera (bottom)"><p class="mut">Left: start. Right: goal. Top: agent camera. Bottom: wrist camera.</p></div>
+<div><div id="exp" class="plot"></div><p id="exinfo"></p></div></div>
+</section>
+
+<section id="sub" hidden>
+<p>Score the benchmark with your own model, in your browser. Nothing is uploaded.</p>
+<p>1. Download the states (start and goal frames from both cameras, 7-D arm pose) and the 64 candidate actions per state from the <a href="https://huggingface.co/datasets/Ryukijano/robojepa-rankability">dataset</a>.<br>2. Give every candidate a score with your model, higher meaning better.<br>3. Load a CSV with columns <code>split,anchor_id,cand_idx,score</code>. States missing any candidate are skipped.</p>
+<div class="row"><input type="file" id="subf" accept=".csv"><button class="b" id="subdemo">Try a random scorer</button></div>
+<div class="tw"><table id="subt"></table></div><p id="submsg" class="mut"></p>
+</section>
+</main>
+<script src="metrics.js"></script>
+<script src="app.js?v=3"></script>
+</body></html>

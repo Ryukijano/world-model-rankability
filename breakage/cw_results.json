@@ -1,0 +1,203 @@
+{
+ "22m": {
+  "l1": {
+   "overall_rho": 0.7465,
+   "fine_rho": 0.3587,
+   "regret_cm": 5.68,
+   "pairwise_by_gap": [
+    0.518,
+    0.551,
+    0.589,
+    0.65,
+    0.732,
+    0.895
+   ]
+  },
+  "cw_goal10": {
+   "overall_rho": 0.6305,
+   "fine_rho": 0.2387,
+   "regret_cm": 8.75,
+   "pairwise_by_gap": [
+    0.51,
+    0.53,
+    0.556,
+    0.597,
+    0.666,
+    0.829
+   ]
+  },
+  "cw_goal25": {
+   "overall_rho": 0.6821,
+   "fine_rho": 0.2883,
+   "regret_cm": 7.43,
+   "pairwise_by_gap": [
+    0.514,
+    0.539,
+    0.568,
+    0.616,
+    0.693,
+    0.857
+   ]
+  },
+  "cw_goal50": {
+   "overall_rho": 0.7172,
+   "fine_rho": 0.3269,
+   "regret_cm": 6.56,
+   "pairwise_by_gap": [
+    0.515,
+    0.546,
+    0.579,
+    0.633,
+    0.712,
+    0.877
+   ]
+  },
+  "cw_pred25": {
+   "overall_rho": 0.7238,
+   "fine_rho": 0.3309,
+   "regret_cm": 6.39,
+   "pairwise_by_gap": [
+    0.516,
+    0.547,
+    0.582,
+    0.64,
+    0.719,
+    0.882
+   ]
+  }
+ },
+ "1b": {
+  "l1": {
+   "overall_rho": 0.7886,
+   "fine_rho": 0.4181,
+   "regret_cm": 4.99,
+   "pairwise_by_gap": [
+    0.525,
+    0.568,
+    0.613,
+    0.681,
+    0.766,
+    0.923
+   ]
+  },
+  "cw_goal10": {
+   "overall_rho": 0.6532,
+   "fine_rho": 0.2604,
+   "regret_cm": 8.3,
+   "pairwise_by_gap": [
+    0.511,
+    0.538,
+    0.563,
+    0.606,
+    0.677,
+    0.842
+   ]
+  },
+  "cw_goal25": {
+   "overall_rho": 0.7117,
+   "fine_rho": 0.3057,
+   "regret_cm": 7.18,
+   "pairwise_by_gap": [
+    0.514,
+    0.546,
+    0.58,
+    0.632,
+    0.71,
+    0.877
+   ]
+  },
+  "cw_goal50": {
+   "overall_rho": 0.7537,
+   "fine_rho": 0.3608,
+   "regret_cm": 6.02,
+   "pairwise_by_gap": [
+    0.522,
+    0.559,
+    0.596,
+    0.656,
+    0.738,
+    0.903
+   ]
+  },
+  "cw_pred25": {
+   "overall_rho": 0.7526,
+   "fine_rho": 0.3563,
+   "regret_cm": 6.01,
+   "pairwise_by_gap": [
+    0.518,
+    0.557,
+    0.597,
+    0.657,
+    0.74,
+    0.903
+   ]
+  }
+ },
+ "8b": {
+  "l1": {
+   "overall_rho": 0.7884,
+   "fine_rho": 0.4086,
+   "regret_cm": 4.98,
+   "pairwise_by_gap": [
+    0.526,
+    0.569,
+    0.613,
+    0.68,
+    0.768,
+    0.925
+   ]
+  },
+  "cw_goal10": {
+   "overall_rho": 0.6532,
+   "fine_rho": 0.2567,
+   "regret_cm": 8.11,
+   "pairwise_by_gap": [
+    0.512,
+    0.538,
+    0.564,
+    0.608,
+    0.678,
+    0.843
+   ]
+  },
+  "cw_goal25": {
+   "overall_rho": 0.7123,
+   "fine_rho": 0.3013,
+   "regret_cm": 7.05,
+   "pairwise_by_gap": [
+    0.517,
+    0.548,
+    0.579,
+    0.632,
+    0.711,
+    0.879
+   ]
+  },
+  "cw_goal50": {
+   "overall_rho": 0.7538,
+   "fine_rho": 0.3563,
+   "regret_cm": 6.09,
+   "pairwise_by_gap": [
+    0.523,
+    0.56,
+    0.598,
+    0.656,
+    0.739,
+    0.904
+   ]
+  },
+  "cw_pred25": {
+   "overall_rho": 0.7515,
+   "fine_rho": 0.3498,
+   "regret_cm": 6.08,
+   "pairwise_by_gap": [
+    0.52,
+    0.558,
+    0.596,
+    0.657,
+    0.74,
+    0.903
+   ]
+  }
+ }
+}
