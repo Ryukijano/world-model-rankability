@@ -1,7 +1,8 @@
 # Operations — live Space, Hugging Face, and DGX Spark
 
 Runbook for deploying and maintaining the **live** Gradio Space and for working on this repository from the
-**DGX Spark** control host (`spark-1240`). Written from a Cursor Cloud Agent session on that machine (2026-11-09).
+**DGX Spark** control host (`spark-1240`). Written from a Cursor Cloud Agent session on that machine (2026-11-09).  
+Session narrative: [SESSION_2026-11-09_SPARK.md](SESSION_2026-11-09_SPARK.md).
 
 ## Repositories and artifacts
 

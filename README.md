@@ -89,7 +89,7 @@ Spearman in simulation.
 | `hf/` | Builders for the HF dataset and Spaces, plus `evaluate.py` and `rankability_metrics.py` |
 | `demo/` | Live ZeroGPU Space and static leaderboard Space |
 | `skills/` | `deslop-writing` and `deslop-design`, the agent skills used to edit the public pages |
-| `docs/` | Benchmark protocol, full results, and [live Space / Spark operations](docs/OPERATIONS.md) |
+| `docs/` | Protocol, results, [operations](docs/OPERATIONS.md), [2026-11-09 Spark session log](docs/SESSION_2026-11-09_SPARK.md) |
 
 Paths in the scripts point at our Isambard project (`/projects/u6xn/rankability`); change `R` to run elsewhere.
 
