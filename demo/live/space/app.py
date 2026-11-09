@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import torch  # noqa: E402
-from huggingface_hub import snapshot_download  # noqa: E402
+from huggingface_hub import get_token, snapshot_download  # noqa: E402
 from scipy.stats import spearmanr  # noqa: E402
 
 import rjlive  # noqa: E402
@@ -19,7 +19,14 @@ WEIGHTS_REPO = "Ryukijano/robojepa-22m-rankability-live"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 SIZES = {"22M": "22m", "50M": "50m", "100M": "100m", "300M": "300m", "1B": "1b", "2B": "2b", "4B": "4b", "8B": "8b"}
 STEPS = {"22m": "150k", "50m": "120k", "100m": "150k", "300m": "300k", "1b": "300k", "2b": "450k", "4b": "450k", "8b": "300k"}
-weights_dir = snapshot_download(WEIGHTS_REPO, token=os.environ.get("HF_TOKEN"))
+_hf_token = os.environ.get("HF_TOKEN") or get_token()
+if not _hf_token:
+    raise RuntimeError(
+        "Missing Hugging Face token for private weights. "
+        "Set Space Settings → Repository secrets → HF_TOKEN to a read token with access to "
+        f"{WEIGHTS_REPO}."
+    )
+weights_dir = snapshot_download(WEIGHTS_REPO, token=_hf_token)
 ENCODER = rjlive.load_encoder(weights_dir, DEVICE)
 MODELS = {}
 for _s in SIZES.values():
