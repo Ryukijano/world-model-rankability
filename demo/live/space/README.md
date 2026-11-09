@@ -10,7 +10,11 @@ app_file: app.py
 license: cc-by-nc-sa-4.0
 short_description: Live RoboJEPA-22M action ranking on ZeroGPU
 startup_duration_timeout: 1h
+models:
+  - Ryukijano/robojepa-22m-rankability-live
 ---
+
+**Private weights:** add a Space repository secret `HF_TOKEN` with a Hugging Face read token that can access `Ryukijano/robojepa-22m-rankability-live`. Without it, startup fails when downloading the checkpoint.
 
 Live companion to the [world-model rankability benchmark](https://huggingface.co/spaces/Ryukijano/world-model-rankability).
 Runs Meta's released RoboJEPA-22M (150k) with the frozen V-JEPA 2.1 ViT-G/384 encoder on ZeroGPU to rank 64 candidate
