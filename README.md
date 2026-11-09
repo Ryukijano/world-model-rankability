@@ -9,8 +9,9 @@ Public artifacts:
 
 - Benchmark data and evaluator: [Ryukijano/robojepa-rankability](https://huggingface.co/datasets/Ryukijano/robojepa-rankability)
 - Leaderboard and state explorer: [Ryukijano/world-model-rankability](https://huggingface.co/spaces/Ryukijano/world-model-rankability)
-- Live demo (private for now): [Ryukijano/world-model-rankability-live](https://huggingface.co/spaces/Ryukijano/world-model-rankability-live),
-  all eight RoboJEPA sizes (22M to 8B) running on ZeroGPU
+- Live demo: [Ryukijano/world-model-rankability-live](https://huggingface.co/spaces/Ryukijano/world-model-rankability-live),
+  all eight RoboJEPA sizes (22M to 8B) on ZeroGPU — weights are **private**; operators need Space secret `HF_TOKEN`
+  ([runbook](docs/OPERATIONS.md))
 
 ![Leaderboard Space](figures/static_space.png)
 
@@ -68,6 +69,7 @@ Spearman .99995 ([demo/live/verify_gpu.py](demo/live/verify_gpu.py)); the top pi
 two scores are often closer than 1e-4. All eight released sizes are served from one Space: bf16 predictors cast to fp16 share one fp32 encoder, 39 GB
 resident and 44 GB peak. On 10 states per size their live scores match the stored ones with median Spearman .9998
 or higher ([demo/live/verify_all_sizes.py](demo/live/verify_all_sizes.py)). [demo/static](demo/static) is the leaderboard Space.
+Deploy, private weights, and DGX Spark workflow: [docs/OPERATIONS.md](docs/OPERATIONS.md).
 
 ## Next
 
@@ -87,7 +89,7 @@ Spearman in simulation.
 | `hf/` | Builders for the HF dataset and Spaces, plus `evaluate.py` and `rankability_metrics.py` |
 | `demo/` | Live ZeroGPU Space and static leaderboard Space |
 | `skills/` | `deslop-writing` and `deslop-design`, the agent skills used to edit the public pages |
-| `docs/` | Benchmark protocol and full results |
+| `docs/` | Benchmark protocol, full results, and [live Space / Spark operations](docs/OPERATIONS.md) |
 
 Paths in the scripts point at our Isambard project (`/projects/u6xn/rankability`); change `R` to run elsewhere.
 
